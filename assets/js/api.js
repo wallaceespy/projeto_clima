@@ -8,34 +8,47 @@ const WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
 // 🔎 FUNÇÃO PRINCIPAL
 // ================================
 async function buscarClima() {
-  const cidade = document.getElementById("cityInput").value;
+  const cidade = document.getElementById("cityInput").value.trim();
 
-  if (!cidade) return;
+  if (!cidade) {
+    mostrarErro("Digite o nome de uma cidade.");
+    return;
+  }
 
   mostrarLoading(true);
   esconderErro();
   esconderResultado();
 
   try {
-    // 1️⃣ Buscar coordenadas
+    // 1️⃣ GEOLOCALIZAÇÃO
     const geoRes = await fetch(`${GEO_URL}?name=${cidade}&count=1&language=pt&format=json`);
+
+    if (!geoRes.ok) throw new Error("Erro na API de localização.");
+
     const geoData = await geoRes.json();
 
-    if (!geoData.results) {
-      throw new Error("Cidade não encontrada");
+    if (!geoData.results || geoData.results.length === 0) {
+      throw new Error("Cidade não encontrada.");
     }
 
     const { latitude, longitude, name, country, elevation } = geoData.results[0];
 
-    // 2️⃣ Buscar clima
+    // 2️⃣ CLIMA
     const weatherRes = await fetch(
       `${WEATHER_URL}?latitude=${latitude}&longitude=${longitude}&current_weather=true`
     );
 
+    if (!weatherRes.ok) throw new Error("Erro na API de clima.");
+
     const weatherData = await weatherRes.json();
+
+    if (!weatherData.current_weather) {
+      throw new Error("Dados climáticos indisponíveis.");
+    }
+
     const clima = weatherData.current_weather;
 
-    // 3️⃣ Atualizar UI
+    // 3️⃣ ATUALIZAÇÃO
     atualizarTela({
       cidade: `${name}, ${country}`,
       temperatura: clima.temperature,
@@ -48,7 +61,7 @@ async function buscarClima() {
     });
 
   } catch (error) {
-    mostrarErro(error.message);
+    mostrarErro(error.message || "Erro inesperado.");
   } finally {
     mostrarLoading(false);
   }
@@ -71,70 +84,87 @@ function atualizarTela(data) {
   document.getElementById("windspeed").textContent = data.vento + " km/h";
   document.getElementById("winddirection").textContent = data.direcao;
   document.getElementById("elevation").textContent = data.elevation + " m";
-  document.getElementById("weatherTime").textContent = formatarHora(data.horario);
+
+  // 🕒 DATA COMPLETA
+  document.getElementById("weatherTime").textContent = formatarDataCompleta(data.horario);
 
   const desc = getDescricaoClima(data.weathercode);
-  document.getElementById("weatherDesc").textContent = desc.texto;
-  document.getElementById("weatherEmoji").textContent = desc.emoji;
 
+  document.getElementById("weatherDesc").textContent = desc.texto;
+
+  // 🌤️ WEATHER ICONS
+  const icon = document.getElementById("weatherEmoji");
+  icon.innerHTML = `<i class="wi ${desc.icon}"></i>`;
+
+  // 🎨 FUNDO + ANIMAÇÃO
   alterarFundo(data.weathercode, data.isDay);
 
   mostrarResultado();
 }
 
 // ================================
-// 🌤️ DESCRIÇÃO DO CLIMA
+// 🌤️ DESCRIÇÃO + ÍCONES
 // ================================
 function getDescricaoClima(code) {
   const mapa = {
-    0: { texto: "Céu limpo", emoji: "☀️" },
-    1: { texto: "Poucas nuvens", emoji: "🌤️" },
-    2: { texto: "Parcialmente nublado", emoji: "⛅" },
-    3: { texto: "Nublado", emoji: "☁️" },
-    45: { texto: "Nevoeiro", emoji: "🌫️" },
-    48: { texto: "Nevoeiro denso", emoji: "🌫️" },
-    51: { texto: "Garoa", emoji: "🌦️" },
-    61: { texto: "Chuva", emoji: "🌧️" },
-    71: { texto: "Neve", emoji: "❄️" },
-    95: { texto: "Tempestade", emoji: "⛈️" }
+    0: { texto: "Céu limpo", icon: "wi-day-sunny" },
+    1: { texto: "Poucas nuvens", icon: "wi-day-cloudy" },
+    2: { texto: "Parcialmente nublado", icon: "wi-cloud" },
+    3: { texto: "Nublado", icon: "wi-cloudy" },
+    45: { texto: "Nevoeiro", icon: "wi-fog" },
+    51: { texto: "Garoa", icon: "wi-sprinkle" },
+    61: { texto: "Chuva", icon: "wi-rain" },
+    71: { texto: "Neve", icon: "wi-snow" },
+    95: { texto: "Tempestade", icon: "wi-thunderstorm" }
   };
 
-  return mapa[code] || { texto: "Clima desconhecido", emoji: "❓" };
+  return mapa[code] || { texto: "Clima desconhecido", icon: "wi-na" };
 }
 
 // ================================
-// 🎨 FUNDO DINÂMICO + ANIMAÇÃO
+// 🕒 DATA COMPLETA FORMATADA
+// ================================
+function formatarDataCompleta(horaISO) {
+  const data = new Date(horaISO);
+
+  return data.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+// ================================
+// 🎨 FUNDO + ANIMAÇÃO
 // ================================
 function alterarFundo(code, isDay) {
   const body = document.body;
 
-  // remove classes antigas
-  body.className = "";
-
-  // remove efeitos antigos
   removerAnimacoes();
 
-  if (code === 0 && isDay) {
+  // 🌞 DIA / 🌙 NOITE
+  if (isDay) {
     body.style.background = "linear-gradient(135deg, #4facfe, #00f2fe)";
-  } 
-  else if (code === 0 && !isDay) {
+  } else {
     body.style.background = "linear-gradient(135deg, #0f2027, #203a43, #2c5364)";
-  } 
-  else if ([1,2,3].includes(code)) {
-    body.style.background = "linear-gradient(135deg, #bdc3c7, #2c3e50)";
-  } 
-  else if ([51,61].includes(code)) {
+  }
+
+  // 🌧️ CHUVA
+  if ([51, 61].includes(code)) {
     criarChuva();
-    body.style.background = "linear-gradient(135deg, #2c3e50, #4ca1af)";
-  } 
-  else if (code >= 95) {
+  }
+
+  // ⛈️ TEMPESTADE
+  if (code >= 95) {
     criarTempestade();
-    body.style.background = "linear-gradient(135deg, #232526, #414345)";
   }
 }
 
 // ================================
-// 🌧️ ANIMAÇÃO DE CHUVA REAL
+// 🌧️ ANIMAÇÃO DE CHUVA
 // ================================
 function criarChuva() {
   const chuva = document.createElement("div");
@@ -163,18 +193,10 @@ function criarTempestade() {
 }
 
 // ================================
-// 🧹 REMOVER ANIMAÇÕES
+// 🧹 LIMPAR ANIMAÇÕES
 // ================================
 function removerAnimacoes() {
   document.querySelectorAll(".rain, .lightning").forEach(el => el.remove());
-}
-
-// ================================
-// ⏱️ FORMATAR HORA
-// ================================
-function formatarHora(horaISO) {
-  const data = new Date(horaISO);
-  return data.toLocaleString("pt-BR");
 }
 
 // ================================
