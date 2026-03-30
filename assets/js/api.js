@@ -7,17 +7,18 @@ const WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
 // ================================
 // 🔎 FUNÇÃO PRINCIPAL
 // ================================
-async function buscarClima() {
-  const cidade = document.getElementById("cityInput").value.trim();
+async function buscarClima(cidadeParam) {
+ const cidade = cidadeParam;
 
-  if (!cidade) {
-    mostrarErro("Digite o nome de uma cidade.");
-    return;
-  }
+if (!cidade) {
+  throw new Error("Digite o nome de uma cidade");
+}
 
+ if (typeof document !== "undefined") {
   mostrarLoading(true);
   esconderErro();
   esconderResultado();
+}
 
   try {
     // 1️⃣ GEOLOCALIZAÇÃO
@@ -49,23 +50,30 @@ async function buscarClima() {
     const clima = weatherData.current_weather;
 
     // 3️⃣ ATUALIZAÇÃO
-    atualizarTela({
-      cidade: `${name}, ${country}`,
-      temperatura: clima.temperature,
-      vento: clima.windspeed,
-      direcao: getDirecaoCardinal(clima.winddirection),
-      elevation: elevation,
-      horario: clima.time,
-      weathercode: clima.weathercode,
-      isDay: clima.is_day
-    });
+if (typeof document !== "undefined") {
+  atualizarTela({
+    cidade: `${name}, ${country}`,
+    temperatura: clima.temperature,
+    vento: clima.windspeed,
+    direcao: getDirecaoCardinal(clima.winddirection),
+    elevation: elevation,
+    horario: clima.time,
+    weathercode: clima.weathercode,
+    isDay: clima.is_day
+  });
+}
 
-  } catch (error) {
+} catch (error) {
+  if (typeof document !== "undefined") {
     mostrarErro(error.message || "Erro inesperado.");
-  } finally {
+  }
+  throw error; // 🔥 MUITO IMPORTANTE
+} finally {
+  if (typeof document !== "undefined") {
     mostrarLoading(false);
   }
 }
+} 
 
 // ================================
 // 🧭 DIREÇÃO DO VENTO
@@ -222,3 +230,10 @@ function mostrarErro(msg) {
 function esconderErro() {
   document.getElementById("errorMsg").classList.add("hidden");
 }
+
+module.exports = {
+  buscarClima,
+  getDirecaoCardinal,
+  formatarDataCompleta,
+  getDescricaoClima
+};
