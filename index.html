@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Previsão do Tempo</title>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <main class="container">
+    <header class="header">
+      <div class="logo">☁️</div>
+      <h1 class="title">Previsão do<br /><span>Tempo</span></h1>
+      <p class="subtitle">Consulte o clima de qualquer cidade do mundo</p>
+    </header>
+
+    <section class="search-section">
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="cityInput"
+          class="city-input"
+          placeholder="Digite o nome da cidade..."
+          autocomplete="off"
+        />
+        <button id="searchBtn" class="search-btn" onclick="buscarClima()">
+          <span class="btn-text">Buscar</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Buscando dados climáticos...</p>
+    </section>
+
+    <section id="errorMsg" class="error-card hidden">
+      <div class="error-icon">⚠️</div>
+      <p id="errorText">Cidade não encontrada.</p>
+    </section>
+
+    <section id="weatherResult" class="weather-card hidden">
+      <div class="weather-top">
+        <div class="city-info">
+          <h2 id="cityName" class="city-name"></h2>
+          <p id="weatherDesc" class="weather-desc"></p>
+        </div>
+        <div class="weather-icon-big" id="weatherEmoji"></div>
+      </div>
+
+      <div class="temperature-display">
+        <span id="temperature" class="temp-value"></span>
+        <span class="temp-unit">°C</span>
+      </div>
+
+      <div class="weather-details">
+        <div class="detail-card">
+          <span class="detail-icon">💨</span>
+          <span class="detail-label">Vento</span>
+          <span id="windspeed" class="detail-value"></span>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">🧭</span>
+          <span class="detail-label">Direção</span>
+          <span id="winddirection" class="detail-value"></span>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">📍</span>
+          <span class="detail-label">Altitude</span>
+          <span id="elevation" class="detail-value"></span>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">🕐</span>
+          <span class="detail-label">Atualizado</span>
+          <span id="weatherTime" class="detail-value"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./assets/js/api.js"></script>
+  <script>
+    const input = document.getElementById('cityInput');
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') buscarClima();
+    });
+  </script>
+</body>
+</html>
