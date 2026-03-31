@@ -36,7 +36,7 @@
         <button 
   id="searchBtn" 
   class="search-btn" 
-  onclick="buscarClima(document.getElementById('cityInput').value)"
+  onclick="executarBusca(document.getElementById('cityInput').value)"
 >
   <span class="btn-text">Buscar</span>
   <span class="btn-icon">→</span>
@@ -90,6 +90,8 @@
           <span id="weatherTime" class="detail-value"></span>
         </div>
       </div>
+
+      <div id="previsaoDias" class="previsao"></div>
     </section>
   </main>
 
@@ -98,7 +100,7 @@
     const input = document.getElementById('cityInput');
     input.addEventListener('keydown', function (e) {
 if (e.key === 'Enter') {
-  buscarClima(input.value);
+  executarBusca(input.value);
 }
     });
   </script>

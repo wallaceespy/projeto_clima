@@ -484,3 +484,28 @@ body {
   96% { opacity: 0.8; }
   97% { opacity: 0; }
 }
+
+
+.previsao {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  overflow-x: auto;
+   padding: 10px 0;
+    padding: 10px 0;
+}
+
+.card-dia {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 12px;
+  min-width: 110px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  color: white;
+  font-weight: 500;
+}
+
+body.chuva {
+  filter: brightness(0.8);
+}
