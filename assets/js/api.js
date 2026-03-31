@@ -3,7 +3,6 @@
 // ================================
 const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
-
 // ================================
 // 🔎 FUNÇÃO PRINCIPAL
 // ================================
@@ -12,12 +11,6 @@ async function buscarClima(cidadeParam) {
 
 if (!cidade) {
   throw new Error("Digite o nome de uma cidade");
-}
-
- if (typeof document !== "undefined") {
-  mostrarLoading(true);
-  esconderErro();
-  esconderResultado();
 }
 
   try {
@@ -229,11 +222,20 @@ function mostrarErro(msg) {
 
 function esconderErro() {
   document.getElementById("errorMsg").classList.add("hidden");
-}
-
+} 
+/*
 module.exports = {
   buscarClima,
   getDirecaoCardinal,
   formatarDataCompleta,
   getDescricaoClima
-};
+};*/
+
+if (typeof module !== "undefined") {
+  module.exports = {
+    buscarClima,
+    getDirecaoCardinal,
+    formatarDataCompleta,
+    getDescricaoClima
+  };
+}
